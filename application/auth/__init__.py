@@ -1,1 +1,1 @@
-import application.auth.v1
+import application.auth.v1_controller
