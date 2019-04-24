@@ -1,6 +1,6 @@
 from flask_jwt_extended import JWTManager
-from application import app
-jwt = JWTManager(app)
+
+jwt = JWTManager()
 
 
 @jwt.token_in_blacklist_loader

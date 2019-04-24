@@ -1,5 +1,8 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
+from application.shared.database import db
+from application.jwt import jwt
+from application.auth.v1_controller import auth_v1
+from application.http import httperrors
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
@@ -12,12 +15,12 @@ app.config['JWT_SECRET_KEY'] = 'jwt-secret-string'
 app.config['JWT_BLACKLIST_ENABLED'] = True
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
 
-db = SQLAlchemy(app)
-import application.auth.models
+db.app = app
+db.init_app(app)
 db.create_all()
 
-from application import (
-    jwt,
-    http,
-    auth,
-)
+jwt.init_app(app)
+
+app.register_blueprint(auth_v1)
+app.register_blueprint(httperrors)
+# ...

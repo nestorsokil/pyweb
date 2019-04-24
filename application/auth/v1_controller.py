@@ -9,14 +9,17 @@ from flask_jwt_extended import (
 )
 from application.auth.models import UserModel, RevokedTokenModel
 from application.http.models import HttpError, HttpMessage
-from application import app
 from utils.http import returns_json, json_convert
+from flask import Blueprint
 from application.auth.v1_dto import RegisterRequest, RegisterResponse, LoginRequest, LoginResponse
 
-LOG = logging.getLogger(__name__)
+LOG = logging.getLogger("[auth_v1]")
+
+auth_v1 = Blueprint("auth_v1", __name__)
+auth_v1.url_prefix = "/v1/auth"
 
 
-@app.route('/v1/register', methods=['POST'])
+@auth_v1.route('/register', methods=['POST'])
 @returns_json
 @json_convert(to=RegisterRequest)
 def register_v1(request: RegisterRequest):
@@ -33,7 +36,7 @@ def register_v1(request: RegisterRequest):
     return RegisterResponse(new_user.id, access_token, refresh_token), 201
 
 
-@app.route('/v1/login', methods=['POST'])
+@auth_v1.route('/login', methods=['POST'])
 @returns_json
 @json_convert(to=LoginRequest)
 def login_v1(request: LoginRequest):
@@ -53,7 +56,7 @@ def login_v1(request: LoginRequest):
         return HttpError('Wrong credentials'), 403
 
 
-@app.route('/v1/logout/access', methods=['POST'])
+@auth_v1.route('/logout/access', methods=['POST'])
 @returns_json
 @jwt_required
 def logout_access_v1():
@@ -63,7 +66,7 @@ def logout_access_v1():
     return HttpMessage('Access token has been revoked'), 200
 
 
-@app.route('/v1/logout/refresh', methods=['POST'])
+@auth_v1.route('/logout/refresh', methods=['POST'])
 @returns_json
 @jwt_refresh_token_required
 def logout_refresh_v1():
@@ -73,7 +76,7 @@ def logout_refresh_v1():
     return HttpMessage('Refresh token has been revoked'), 200
 
 
-@app.route('/v1/token/refresh', methods=['POST'])
+@auth_v1.route('/token/refresh', methods=['POST'])
 @returns_json
 @jwt_refresh_token_required
 def token_refresh_v1():
