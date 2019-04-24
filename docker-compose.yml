@@ -1,10 +1,76 @@
 version: '2'
 services:
   mysql:
-    image: mysql:5.6
+    image: mysql:8.0
     ports:
       - "3347:3306"
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: 1234
       MYSQL_DATABASE: pyweb
+    volumes:
+      - mysql-vol:/var/lib/mysql
+
+  hdfs-name:
+    image: quay.io/geodocker/hdfs:0.1
+    command: name
+    environment:
+      HADOOP_MASTER_ADDRESS: hdfs-name
+    ports:
+      - 50070:50070
+    volumes:
+       - namenode-vol:/data/hdfs
+  hdfs-data:
+    image: quay.io/geodocker/hdfs:0.1
+    command: data
+    environment:
+      HADOOP_MASTER_ADDRESS: hdfs-name
+    depends_on:
+      - hdfs-name
+    volumes:
+      - hdfs-data-vol:/data/hdfs
+  zookeeper:
+      image: quay.io/geodocker/zookeeper:latest
+      ports:
+        - 2181:2181
+      volumes:
+        - zookeeper-vol:/data/hdfs
+  accumulo-master:
+      image: quay.io/geodocker/accumulo:latest
+      command: master --auto-init
+      environment:
+        HADOOP_MASTER_ADDRESS: hdfs-name
+        ZOOKEEPERS: zookeeper
+        ACCUMULO_PASSWORD: GisPwd
+      depends_on:
+        - zookeeper
+  accumulo-monitor:
+      image: quay.io/geodocker/accumulo:latest
+      command: monitor
+      environment:
+        HADOOP_MASTER_ADDRESS: hdfs-name
+        ZOOKEEPERS: zookeeper
+      ports:
+        - 50095:50095
+      depends_on:
+        - zookeeper
+        - accumulo-master
+  accumulo-tserver:
+      image: quay.io/geodocker/accumulo:latest
+      command: tserver
+      environment:
+        HADOOP_MASTER_ADDRESS: hdfs-name
+        ZOOKEEPERS: zookeeper
+      depends_on:
+        - zookeeper
+        - accumulo-master
+
+volumes:
+  mysql-vol:
+    driver: local
+  zookeeper-vol:
+    driver: local
+  hdfs-data-vol:
+    driver: local
+  namenode-vol:
+    driver: local
