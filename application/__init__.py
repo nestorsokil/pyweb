@@ -13,6 +13,7 @@ app.config['JWT_BLACKLIST_ENABLED'] = True
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
 
 db = SQLAlchemy(app)
+import application.auth.models
 db.create_all()
 
 from application import (
