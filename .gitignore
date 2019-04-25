@@ -111,3 +111,4 @@ venv.bak/
 *.iml
 out
 gen
+resources/accumulo/generated

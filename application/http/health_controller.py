@@ -1,6 +1,7 @@
 import logging
 from application.shared.database import db
 from sqlalchemy.sql import text
+from sqlalchemy.exc import DatabaseError
 
 from flask import Blueprint
 from utils.http import returns_json
@@ -22,6 +23,6 @@ def db_available():
     try:
         db.session.query('1').from_statement(text('SELECT 1')).all()
         return "Ok"
-    except Exception as e:
+    except DatabaseError as e:
         logging.error(e)
         return "Connection is broken"
